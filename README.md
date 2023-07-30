@@ -30,62 +30,62 @@ This can be reproduced by deploying the app and then reconnecting with the brows
 On the server we see
 
 ```
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]ERROR:    Exception in ASGI application
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]Traceback (most recent call last):
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 247, in run_asgi
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    result = await self.app(self.scope, self.asgi_receive, self.asgi_send)
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    return await self.app(scope, receive, send)
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 289, in __call__
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    await super().__call__(scope, receive, send)
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 122, in __call__
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    await self.middleware_stack(scope, receive, send)
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 149, in __call__
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    await self.app(scope, receive, send)
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/app/main.py", line 36, in __call__
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    await response(scope, receive, send)
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/site-packages/starlette/responses.py", line 164, in __call__
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    await send(
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 310, in asgi_send
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    raise RuntimeError(msg % message_type)
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]RuntimeError: Expected ASGI message 'websocket.accept' or 'websocket.close', but got 'http.response.start'.
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]INFO:     connection open
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]ERROR:    closing handshake failed
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]Traceback (most recent call last):
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/protocol.py", line 959, in transfer_data
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    message = await self.read_message()
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]              ^^^^^^^^^^^^^^^^^^^^^^^^^
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/protocol.py", line 1029, in read_message
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    frame = await self.read_data_frame(max_size=self.max_size)
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/protocol.py", line 1104, in read_data_frame
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    frame = await self.read_frame(max_size)
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/protocol.py", line 1161, in read_frame
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    frame = await Frame.read(
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]            ^^^^^^^^^^^^^^^^^
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/framing.py", line 68, in read
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    data = await reader(2)
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]           ^^^^^^^^^^^^^^^
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/asyncio/streams.py", line 727, in readexactly
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    raise exceptions.IncompleteReadError(incomplete, n)
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]asyncio.exceptions.IncompleteReadError: 0 bytes read on a total of 2 expected bytes
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]The above exception was the direct cause of the following exception:
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]Traceback (most recent call last):
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/server.py", line 248, in handler
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    await self.close()
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/protocol.py", line 766, in close
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    await self.write_close_frame(Close(code, reason))
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/protocol.py", line 1232, in write_close_frame
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    await self.write_frame(True, OP_CLOSE, data, _state=State.CLOSING)
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/protocol.py", line 1205, in write_frame
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    await self.drain()
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/protocol.py", line 1194, in drain
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    await self.ensure_open()
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/protocol.py", line 935, in ensure_open
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]    raise self.connection_closed_exc()
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]websockets.exceptions.ConnectionClosedError: sent 1000 (OK); no close frame received
-2023-07-30T07:13:11Z app[6e82932a759e18] fra [info]INFO:     connection closed
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 247, in run_asgi
+    result = await self.app(self.scope, self.asgi_receive, self.asgi_send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 289, in __call__
+    await super().__call__(scope, receive, send)
+  File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 122, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 149, in __call__
+    await self.app(scope, receive, send)
+  File "/app/main.py", line 36, in __call__
+    await response(scope, receive, send)
+  File "/usr/local/lib/python3.11/site-packages/starlette/responses.py", line 164, in __call__
+    await send(
+  File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 310, in asgi_send
+    raise RuntimeError(msg % message_type)
+RuntimeError: Expected ASGI message 'websocket.accept' or 'websocket.close', but got 'http.response.start'.
+INFO:     connection open
+ERROR:    closing handshake failed
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/protocol.py", line 959, in transfer_data
+    message = await self.read_message()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/protocol.py", line 1029, in read_message
+    frame = await self.read_data_frame(max_size=self.max_size)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/protocol.py", line 1104, in read_data_frame
+    frame = await self.read_frame(max_size)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/protocol.py", line 1161, in read_frame
+    frame = await Frame.read(
+            ^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/framing.py", line 68, in read
+    data = await reader(2)
+           ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/asyncio/streams.py", line 727, in readexactly
+    raise exceptions.IncompleteReadError(incomplete, n)
+asyncio.exceptions.IncompleteReadError: 0 bytes read on a total of 2 expected bytes
+The above exception was the direct cause of the following exception:
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/server.py", line 248, in handler
+    await self.close()
+  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/protocol.py", line 766, in close
+    await self.write_close_frame(Close(code, reason))
+  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/protocol.py", line 1232, in write_close_frame
+    await self.write_frame(True, OP_CLOSE, data, _state=State.CLOSING)
+  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/protocol.py", line 1205, in write_frame
+    await self.drain()
+  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/protocol.py", line 1194, in drain
+    await self.ensure_open()
+  File "/usr/local/lib/python3.11/site-packages/websockets/legacy/protocol.py", line 935, in ensure_open
+    raise self.connection_closed_exc()
+websockets.exceptions.ConnectionClosedError: sent 1000 (OK); no close frame received
+INFO:     connection closed
 ```
