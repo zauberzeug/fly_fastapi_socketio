@@ -27,15 +27,9 @@ async def get():
                     var socket = io(url, {{ path: "/ws/socket.io" }} );
                     var button = document.getElementById('button');
                     var counter = document.getElementById('counter');
-                    button.onclick = function() {{
-                        socket.emit('click', '{id}');
-                    }};
-                    socket.on('count', function(msg) {{
-                        counter.innerHTML = "Counter: " + msg.count;
-                    }});
-                    socket.on('error', function(msg) {{
-                        counter.innerHTML = "Error: " + msg.msg;
-                    }});
+                    button.onclick = function() {{ socket.emit('click', '{id}'); }};
+                    socket.on('count', function(msg) {{ counter.innerHTML = "Counter: " + msg.count; }});
+                    socket.on('error', function(msg) {{ counter.innerHTML = "Error: " + msg.msg; }});
                 </script>
             </body>
         </html>
