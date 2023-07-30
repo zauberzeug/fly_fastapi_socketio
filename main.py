@@ -1,13 +1,41 @@
 #!/usr/bin/env python3
+import os
+from urllib.parse import parse_qs
 from uuid import uuid4
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi_socketio import SocketManager
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.types import ASGIApp, Scope, Receive, Send
+from starlette.responses import Response
+
+from icecream import ic
 
 app = FastAPI()
 socket_manager = SocketManager(app=app)
 
+fly_instance_id = os.environ.get('FLY_ALLOC_ID', 'local').split('-')[0]
 counter_dict = {}
+
+class FlyReplayMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] in ("http", "websocket"):
+            query_string = scope.get("query_string", b'').decode()
+            query_params = parse_qs(query_string)
+            target_instance = query_params.get("fly_instance_id", [fly_instance_id])[0]
+            if target_instance != fly_instance_id:
+                if scope["type"] == "http" or (scope["type"] == "websocket" and (b'connection', b'Upgrade') in scope["headers"]):
+                    ic(scope, target_instance, fly_instance_id)
+                    response = Response()
+                    response.headers["fly-replay"] = f'instance={target_instance}'
+                    await response(scope, receive, send) # returning a http response seems not to work for websocket requests
+                    return
+        await self.app(scope, receive, send)
+
+app.add_middleware(FlyReplayMiddleware)
 
 @app.get('/')
 async def get():
@@ -16,20 +44,29 @@ async def get():
     return HTMLResponse(content=f"""
         <html>
             <body style="font-family: Arial, sans-serif; padding: 10px;">
-                <label id="label">ID: {id}</label>
+                <label id="label">Fly-Instance: {fly_instance_id}, Client-ID: {id}</label>
                 <br/>
                 <button id="button" style="padding: 10px 20px; margin: 40px 0px; border: none;">Increment</button>
                 <br/>
                 <label id="counter">Counter: 0</label>
+                <br/>
+                <label id="transport_type">Transport: N/A</label>
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.min.js"></script>
                 <script>
                     const url = window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host;
-                    var socket = io(url, {{ path: "/ws/socket.io" }} );
+                    const query = {{ fly_instance_id: "{ fly_instance_id }" }};
+                    var socket = io(url, {{ path: "/ws/socket.io", query }} );
+
                     var button = document.getElementById('button');
-                    var counter = document.getElementById('counter');
                     button.onclick = function() {{ socket.emit('click', '{id}'); }};
+                    var counter = document.getElementById('counter');
                     socket.on('count', function(msg) {{ counter.innerHTML = "Counter: " + msg.count; }});
                     socket.on('error', function(msg) {{ counter.innerHTML = "Error: " + msg.msg; }});
+
+                    var transport = document.getElementById('transport_type');
+                    setInterval(function() {{
+                        transport.innerHTML = "Transport: " + (socket.io.engine ? socket.io.engine.transport.name : 'N/A');
+                    }}, 1000);
                 </script>
             </body>
         </html>

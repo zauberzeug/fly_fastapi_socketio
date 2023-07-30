@@ -1,2 +1,3 @@
 fastapi-socketio
-uvicorn
+uvicorn[standard]
+icecream
