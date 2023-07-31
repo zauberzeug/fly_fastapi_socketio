@@ -22,18 +22,22 @@ class FlyReplayMiddleware(BaseHTTPMiddleware):
         self.app = app
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] in ("http", "websocket"):
-            query_string = scope.get("query_string", b'').decode()
-            query_params = parse_qs(query_string)
-            target_instance = query_params.get("fly_instance_id", [fly_instance_id])[0]
-            if target_instance != fly_instance_id:
-                if scope["type"] == "http" or (scope["type"] == "websocket" and (b'connection', b'Upgrade') in scope["headers"]):
-                    ic(scope, target_instance, fly_instance_id)
-                    response = Response()
-                    response.headers["fly-replay"] = f'instance={target_instance}'
-                    await response(scope, receive, send) # returning a http response seems not to work for websocket requests
-                    return
-        await self.app(scope, receive, send)
+        query_string = scope.get('query_string', b'').decode()
+        query_params = parse_qs(query_string)
+        target_instance = query_params.get('fly_instance_id', [fly_instance_id])[0]
+        if scope['type']  == 'http' and target_instance != fly_instance_id:
+                response = Response()
+                response.headers['fly-replay'] = f'instance={target_instance}'
+                await response(scope, receive, send) # returning a http response seems not to work for websocket requests
+                return
+        async def send_wrapper(message):
+            if message['type'] == 'websocket.close' and 'Invalid session' in message['reason']:
+                ic(message)
+                message = {'type': 'websocket.accept'}
+                if target_instance != fly_instance_id:
+                    message['headers'] = [[b'fly-replay', f'instance={target_instance}'.encode()]]
+            await send(message)
+        await self.app(scope, receive, send_wrapper)
 
 app.add_middleware(FlyReplayMiddleware)
 
@@ -88,4 +92,4 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 
     import uvicorn
-    uvicorn.run("main:app", host='0.0.0.0', port=8000, reload=True)
+    uvicorn.run('main:app', host='0.0.0.0', port=8000, reload=True)
