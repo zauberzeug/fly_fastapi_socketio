@@ -7,9 +7,6 @@ from fastapi.responses import HTMLResponse
 from fastapi_socketio import SocketManager
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp, Scope, Receive, Send
-from starlette.responses import Response
-
-from icecream import ic
 
 app = FastAPI()
 socket_manager = SocketManager(app=app)
@@ -28,7 +25,8 @@ class FlyReplayMiddleware(BaseHTTPMiddleware):
         async def send_wrapper(message):
             if target_instance != fly_instance_id:
                 if message['type'] == 'websocket.close' and 'Invalid session' in message['reason']:
-                    message = {'type': 'websocket.accept'} # fly.io only seems to look at the fly-replay header if websocket is accepted
+                    # fly.io only seems to look at the fly-replay header if websocket is accepted
+                    message = {'type': 'websocket.accept'}
                 if 'headers' not in message:
                     message['headers'] = []              
                 message['headers'].append([b'fly-replay', f'instance={target_instance}'.encode()])
