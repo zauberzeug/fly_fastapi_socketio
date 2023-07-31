@@ -25,17 +25,13 @@ class FlyReplayMiddleware(BaseHTTPMiddleware):
         query_string = scope.get('query_string', b'').decode()
         query_params = parse_qs(query_string)
         target_instance = query_params.get('fly_instance_id', [fly_instance_id])[0]
-        if scope['type']  == 'http' and target_instance != fly_instance_id:
-                response = Response()
-                response.headers['fly-replay'] = f'instance={target_instance}'
-                await response(scope, receive, send) # returning a http response seems not to work for websocket requests
-                return
         async def send_wrapper(message):
-            if message['type'] == 'websocket.close' and 'Invalid session' in message['reason']:
-                ic(message)
-                message = {'type': 'websocket.accept'}
-                if target_instance != fly_instance_id:
-                    message['headers'] = [[b'fly-replay', f'instance={target_instance}'.encode()]]
+            if target_instance != fly_instance_id:
+                if message['type'] == 'websocket.close' and 'Invalid session' in message['reason']:
+                    message = {'type': 'websocket.accept'} # fly.io only seems to look at the fly-replay header if websocket is accepted
+                if 'headers' not in message:
+                    message['headers'] = []              
+                message['headers'].append([b'fly-replay', f'instance={target_instance}'.encode()])
             await send(message)
         await self.app(scope, receive, send_wrapper)
 
