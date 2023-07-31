@@ -15,6 +15,12 @@ fly_instance_id = os.environ.get('FLY_ALLOC_ID', 'local').split('-')[0]
 counter_dict = {}
 
 class FlyReplayMiddleware(BaseHTTPMiddleware):
+    """
+    If the wrong instance was picked by the fly.io load balancer we use the fly-replay header
+    to repeat the request again on the right instance.
+
+    This only works if the right instance is provided as a query_string parameter.
+    """
     def __init__(self, app: ASGIApp) -> None:
         self.app = app
 
@@ -28,7 +34,7 @@ class FlyReplayMiddleware(BaseHTTPMiddleware):
                     # fly.io only seems to look at the fly-replay header if websocket is accepted
                     message = {'type': 'websocket.accept'}
                 if 'headers' not in message:
-                    message['headers'] = []              
+                    message['headers'] = []
                 message['headers'].append([b'fly-replay', f'instance={target_instance}'.encode()])
             await send(message)
         await self.app(scope, receive, send_wrapper)
@@ -64,7 +70,7 @@ async def get():
                     var transport = document.getElementById('transport_type');
                     setInterval(function() {{
                         transport.innerHTML = "Transport: " + (socket.io.engine ? socket.io.engine.transport.name : 'N/A');
-                    }}, 1000);
+                    }}, 100);
                 </script>
             </body>
         </html>
