@@ -28,7 +28,7 @@ If you have an interactive app running on fly.io with multiple instances
 you may need to make sure that your websocket is connecting back to exactly the instance where the website was served from due some local state.
 This can not be archived with the `fly-force-instance-id` header, because it is not possible to add custom headers to websockets in the browser.
 
-# The Solution
+## The Solution
 
 Inspired by https://fly.io/blog/replicache-machines-demo/ we use the `fly-replay` header in the response 
 to tell the load balancer to run the request once again to the right instance.
@@ -38,4 +38,7 @@ The instance simply injects its fly id into the served page so the socket connec
 A middleware can then decide if the requested instance id matches the one handling the request.
 If not a replay must be performed.
 
+## See also
 
+* [Real-Time Collaboration with Replicache and Fly-Replay](https://fly.io/blog/replicache-machines-demo/), Fly.io. Inspired this approach. ([repo](https://github.com/fly-apps/replicache-websocket/))
+* [express-socketio-fly-replay](https://github.com/bjarkebech/express-socketio-fly-replay). Implementation of this approach in JavaScript (Node + express.js).
